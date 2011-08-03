@@ -2,6 +2,7 @@
 // @name           LinkedIn WVMX
 // @namespace      http://www.linkedin.com
 // @include        http://www.linkedin.com/
+// @include        http://www.linkedin.com/
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js
 // ==/UserScript==
 
@@ -9,7 +10,7 @@
 // http://erikvold.com/blog/index.cfm/2010/6/14/using-jquery-with-a-user-script
 function addJQuery(callback) {
   var script = document.createElement("script");
-  script.setAttribute("src", "http://ajax.googleapis.com/ajax/libs/jquery/1.4.2/jquery.min.js");
+  script.setAttribute("src", "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js");
   script.addEventListener('load', function() {
     var script = document.createElement("script");
     script.textContent = "(" + callback.toString() + ")();";
@@ -36,11 +37,12 @@ addJQuery(function() {
   wvmpModule.children('.content').append($('<p>').append(link));
 
   setInterval(function() {
-    window.webkitNotifications.createNotification('', 'New profile views!', 'new profile view!');
-    $.get('http://www.linkedin.com/v1/people/~/profile-statistics/profile-views:%28id,timestamp%29', function(data) {
-      var views = $(data).find('profile-view');
-      views.each(function(i, view) {
-        if (view.timestamp && view.timestamp > lastDate) {
+    $.get('http://www.linkedin.com/v1/people/~/profile-statistics/profile-views:(id,timestamp)', function(data) {
+      var timestamps = $(data).find('timestamp');
+
+      timestamps.each(function(i, timestamp) {
+        var time = parseInt($(timestamp).text(), 10);
+        if (time > lastDate) {
           ++count;
         }
       });
@@ -48,15 +50,12 @@ addJQuery(function() {
         window.webkitNotifications.requestPermission();
       }
       else if (count > 0) {
-        alert('count is > 0');
-        window.webkitNotifications.createNotification('', 'New profile views!', 'new profile view!');
-        //window.webkitNotifications.createNotification('', 'New profile views!', count + ' new ' + (count === 1 ? 'person' : 'people') + ' have viewed your profile!').show();
-      }
-      else {
-        window.webkitNotifications.createNotification('', 'no profile views!', 'no profile views!');
+        //window.webkitNotifications.createNotification('', 'New profile views!', 'new profile view!').show();
+        window.webkitNotifications.createNotification('', 'New profile views!', count + ' new ' + (count === 1 ? 'person has' : 'people have') + ' viewed your profile!').show();
+        count = 0;
       }
       lastDate = (new Date()).getTime();
     });
-  }, 5000);
+  }, 30000);
 
 });
