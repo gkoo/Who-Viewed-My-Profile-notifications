@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name           LinkedIn WVMX
+// @name           LinkedIn WVMX Notifications
 // @namespace      http://www.linkedin.com
 // @include        http://www.linkedin.com/
 // @include        http://www.linkedin.com/
@@ -8,7 +8,8 @@
 
 // include jquery
 // http://erikvold.com/blog/index.cfm/2010/6/14/using-jquery-with-a-user-script
-function addJQuery(callback) {
+
+addJQuery = function (callback) {
   var script = document.createElement("script");
   script.setAttribute("src", "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js");
   script.addEventListener('load', function() {
@@ -17,14 +18,57 @@ function addJQuery(callback) {
     document.body.appendChild(script);
   }, false);
   document.body.appendChild(script);
-}
+},
 
+// This function is called after jquery is initialized.
 addJQuery(function() {
   var wvmpModule = $('#extra').children('.stats.profile'),
       link = $('<a>').text('Get notifications when someone views your profile!')
                      .attr('href', '#'),
       lastDate = (new Date()).getTime(),
-      count = 0;
+      WVMX_TIME_INTERVAL = 10000;
+
+
+
+
+  showNotification = function(logo, headline, body) {
+    if (window.webkitNotifications.checkPermission() !== 0) {
+      window.webkitNotifications.requestPermission();
+    }
+    else {
+      window.webkitNotifications.createNotification(logo, headline, body).show();
+    }
+  },
+
+
+
+
+
+  handleView = function(view, lastDate) {
+    var view = $(view),
+        time = parseInt(view.find('timestamp').text(), 10),
+        privacyType, viewer, name;
+
+    if (time < lastDate) {
+      return;
+    }
+    // new view!
+    privacyType = view.find('privacy-type').find('code').text();
+
+    if (privacyType === 'public') {
+      viewer = view.find('viewer');
+      name = [view.find('first-name').text(), view.find('last-name').text()].join(' ');
+    }
+    else {
+      name = 'Someone';
+    }
+    showNotification('', [name, 'viewed your profile!'].join(' '), 'Go check \'em out!');
+  };
+
+
+
+
+
 
   link.click(function(evt) {
     if (window.webkitNotifications.checkPermission() !== 0) {
@@ -37,25 +81,15 @@ addJQuery(function() {
   wvmpModule.children('.content').append($('<p>').append(link));
 
   setInterval(function() {
-    $.get('http://www.linkedin.com/v1/people/~/profile-statistics/profile-views:(id,timestamp)', function(data) {
-      var timestamps = $(data).find('timestamp');
+    $.get('http://www.linkedin.com/v1/people/~/profile-statistics/profile-views', function(data) {
+      var views = $(data).find('profile-view');
 
-      timestamps.each(function(i, timestamp) {
-        var time = parseInt($(timestamp).text(), 10);
-        if (time > lastDate) {
-          ++count;
-        }
+      views.each(function(i, view) {
+        handleView(view, lastDate);
       });
-      if (window.webkitNotifications.checkPermission() !== 0) {
-        window.webkitNotifications.requestPermission();
-      }
-      else if (count > 0) {
-        //window.webkitNotifications.createNotification('', 'New profile views!', 'new profile view!').show();
-        window.webkitNotifications.createNotification('', 'New profile views!', count + ' new ' + (count === 1 ? 'person has' : 'people have') + ' viewed your profile!').show();
-        count = 0;
-      }
+
       lastDate = (new Date()).getTime();
     });
-  }, 30000);
+  }, WVMX_TIME_INTERVAL);
 
 });
