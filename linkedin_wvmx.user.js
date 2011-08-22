@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           LinkedIn WVMX Notifications
 // @namespace      http://www.linkedin.com
-// @match          http://www.linkedin.com/*
+// @match          http://www.linkedin.com/
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js
 // ==/UserScript==
 
@@ -11,7 +11,7 @@
 // get a profile using PAL API
 // http://www.linkedin.com/v1/people/id=14997818:(first-name,last-name,headline,picture-url)
 
-addJQuery = function (callback) {
+var addJQuery = function (callback) {
   var script = document.createElement("script");
   script.setAttribute("src", "https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js");
   script.addEventListener('load', function() {
@@ -20,7 +20,7 @@ addJQuery = function (callback) {
     document.body.appendChild(script);
   }, false);
   document.body.appendChild(script);
-},
+};
 
 // This function is called after jquery is initialized.
 addJQuery(function() {
@@ -35,7 +35,7 @@ addJQuery(function() {
       doNotify    = false,
 
       LI_API_PREFIX = 'http://www.linkedin.com/v1/people/',
-      WVMX_TIME_INTERVAL = 10000,
+      WVMX_TIME_INTERVAL = 5000,
 
 
 
@@ -49,9 +49,9 @@ addJQuery(function() {
       profileUrl = encodeURIComponent(profileUrl);
       logoUrl = encodeURIComponent(logoUrl);
       name = encodeURIComponent(name);
-      url = ['http://localhost:8080/wvmx', name];
-      if (profileUrl) { url.push(encodeURIComponent(profileUrl)) }
-      if (logoUrl) { url.push(encodeURIComponent(logoUrl)) }
+      url = ['http://koo.no.de/wvmx', name];
+      if (profileUrl) { url.push(encodeURIComponent(profileUrl)); }
+      if (logoUrl) { url.push(encodeURIComponent(logoUrl)); }
 
       window.webkitNotifications.createHTMLNotification(url.join('/')).show();
     }
@@ -62,9 +62,10 @@ addJQuery(function() {
 
 
   handleView = function(view, lastDate) {
-    var view = $(view),
-        time = parseInt(view.find('timestamp').text(), 10),
-        privacyType, viewer, name, pictureUrl, profileUrl;
+    var time, privacyType, viewer, name, pictureUrl, profileUrl;
+
+    view = $(view);
+    time = parseInt(view.find('timestamp').text(), 10);
 
     if (time < lastDate) {
       // old view, discard.
@@ -104,7 +105,7 @@ addJQuery(function() {
             }
           }
           else {
-            profileUrl = ''
+            profileUrl = '';
           }
           showNotification(pictureUrl, name, profileUrl);
           // we're done!
