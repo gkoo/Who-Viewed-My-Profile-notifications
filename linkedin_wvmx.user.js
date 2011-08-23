@@ -2,6 +2,8 @@
 // @name           LinkedIn WVMX Notifications
 // @namespace      http://www.linkedin.com
 // @match          http://www.linkedin.com/
+// @match          http://www.linkedin.com/?*
+// @match          http://www.linkedin.com/home*
 // @require        https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js
 // ==/UserScript==
 
