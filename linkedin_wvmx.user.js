@@ -37,7 +37,7 @@ addJQuery(function() {
       doNotify    = false,
 
       LI_API_PREFIX = 'http://www.linkedin.com/v1/people/',
-      WVMX_TIME_INTERVAL = 5000,
+      WVMX_TIME_INTERVAL = 30000,
 
 
 
@@ -107,7 +107,7 @@ addJQuery(function() {
             }
           }
           else {
-            profileUrl = '';
+            profileUrl = 'http://www.linkedin.com/profile/view?id=' + id;
           }
           showNotification(pictureUrl, name, profileUrl);
           // we're done!
